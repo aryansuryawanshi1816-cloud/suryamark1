@@ -1,1 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#00d4ff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Surya.ai">
+<title>Surya.ai</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Exo+2:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void: #010609;
+  --deep: #020d18;
+  --card: #061520;
+  --surface: #0a1f30;
+  --cyan: #00d4ff;
+  --cyan-soft: rgba(0,212,255,0.12);
+  --cyan-border: rgba(0,212,255,0.22);
+  --cyan-glow: 0 0 20px rgba(0,212,255,0.25);
+  --blue: #0055ff;
+  --blue-soft: rgba(0,85,255,0.15);
+  --text: #dff4ff;
+  --text-2: #6aaec8;
+  --text-3: #2d5f78;
+  --danger: #ff3355;
+  --success: #00ffaa;
+  --mono: 'Share Tech Mono', monospace;
+  --display: 'Orbitron', sans-serif;
+  --body: 'Exo 2', sans-serif;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
 
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  height: 100%; width: 100%;
+  background: var(--void);
+  color: var(--text);
+  font-family: var(--body);
+  font-weight: 300;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* BG */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+  animation: gridDrift 80s linear infinite;
+}
+@keyframes gridDrift { to { background-position: 44px 44px; } }
+
+body::after {
+  content:'';
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(0,85,255,0.1) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 50% at 100% 60%, rgba(0,212,255,0.05) 0%, transparent 50%);
+}
+
+/* LAYOUT */
+#app {
+  position:relative; z-index:1;
+  display:flex; flex-direction:column;
+  height:100vh; height:100dvh;
+  max-width:780px; margin:0 auto;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+}
+
+/* ── HEADER ── */
+header {
+  flex-shrink:0;
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid var(--cyan-border);
+  position:relative;
+  background: linear-gradient(180deg, rgba(2,13,24,0.97) 0%, transparent 100%);
+}
+header::after {
+  content:'';
+  position:absolute; bottom:-1px; left:5%; right:5%; height:1px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity:0.5;
+}
+
+.logo { display:flex; align-items:center; gap:10px; }
+
+.logo-mark {
+  width:36px; height:36px; position:relative; flex-shrink:0;
+}
+.logo-mark svg { width:100%; height:100%; }
+
+.logo-text { line-height:1.1; }
+.logo-name {
+  font-family: var(--display);
+  font-size: 1.15rem; font-weight:700;
+  letter-spacing:0.14em;
+  color: var(--text);
+}
+.logo-name em { color:var(--cyan); font-style:normal; text-shadow: 0 0 14px var(--cyan); }
+.logo-tag {
+  font-family: var(--mono);
+  font-size:0.55rem; color:var(--text-3);
+  letter-spacing:0.18em;
+  margin-top:1px;
+}
+
+.header-right { display:flex; align-items:center; gap:12px; }
+
+.status {
+  display:flex; align-items:center; gap:6px;
+  font-family:var(--mono); font-size:0.6rem;
+  color:var(--text-3); letter-spacing:0.1em;
+}
+.status-dot {
+  width:6px; height:6px; border-radius:50%;
+  background:var(--cyan); box-shadow: 0 0 6px var(--cyan);
+  animation: blink 2.5s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.clear-btn {
+  font-family:var(--mono); font-size:0.6rem;
+  color:var(--text-3); letter-spacing:0.1em;
+  background:transparent; border:1px solid var(--cyan-border);
+  border-radius:3px; padding:4px 8px; cursor:pointer;
+  transition:all 0.2s;
+}
+.clear-btn:hover { color:var(--danger); border-color:rgba(255,51,85,0.4); }
+
+/* ── MODEL BAR ── */
+.model-bar {
+  flex-shrink:0;
+  display:flex; align-items:center; gap:6px;
+  padding:7px 20px;
+  border-bottom:1px solid var(--cyan-border);
+  overflow-x:auto; scrollbar-width:none;
+}
+.model-bar::-webkit-scrollbar { display:none; }
+.model-label {
+  font-family:var(--mono); font-size:0.58rem;
+  color:var(--text-3); letter-spacing:0.12em; flex-shrink:0;
+}
+.chip {
+  font-family:var(--mono); font-size:0.62rem;
+  padding:4px 10px; border-radius:3px; flex-shrink:0;
+  border:1px solid var(--cyan-border); color:var(--text-3);
+  background:transparent; cursor:pointer; letter-spacing:0.04em;
+  transition:all 0.18s; white-space:nowrap;
+}
+.chip:hover { color:var(--cyan); border-color:rgba(0,212,255,0.4); }
+.chip.on {
+  color:var(--cyan); border-color:var(--cyan);
+  background:var(--cyan-soft); box-shadow: var(--cyan-glow);
+}
+
+/* ── MESSAGES ── */
+#messages {
+  flex:1; overflow-y:auto;
+  padding:16px 20px; display:flex; flex-direction:column; gap:14px;
+  scroll-behavior:smooth;
+}
+#messages::-webkit-scrollbar { width:2px; }
+#messages::-webkit-scrollbar-thumb { background:var(--cyan-border); border-radius:2px; }
+
+/* Welcome */
+.welcome {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:16px; padding:20px 0;
+  animation: rise 0.7s ease;
+}
+@keyframes rise { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+.w-orb {
+  width:80px; height:80px;
+  animation: spin-slow 12s linear infinite;
+}
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+
+.w-title {
+  font-family:var(--display); font-size:1.8rem; font-weight:700;
+  letter-spacing:0.16em; text-align:center;
+}
+.w-title em { color:var(--cyan); font-style:normal; text-shadow:0 0 20px var(--cyan); }
+.w-sub {
+  font-family:var(--mono); font-size:0.65rem;
+  color:var(--text-3); letter-spacing:0.16em; text-align:center;
+}
+.w-chips {
+  display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+  max-width:440px; margin-top:8px;
+}
+.w-chip {
+  font-family:var(--mono); font-size:0.65rem;
+  padding:7px 13px; border:1px solid var(--cyan-border);
+  border-radius:3px; color:var(--text-2);
+  background:var(--card); cursor:pointer; letter-spacing:0.04em;
+  transition:all 0.2s;
+}
+.w-chip:hover {
+  color:var(--cyan); border-color:var(--cyan);
+  box-shadow:var(--cyan-glow);
+}
+
+/* Message rows */
+.msg { display:flex; gap:10px; animation: rise 0.25s ease; }
+.msg.user { flex-direction:row-reverse; }
+
+.avatar {
+  width:30px; height:30px; flex-shrink:0; border-radius:4px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--display); font-size:0.55rem; font-weight:700;
+  letter-spacing:0.04em;
+}
+.msg.ai .avatar {
+  background:linear-gradient(135deg,#071828,#0c2540);
+  border:1px solid var(--cyan-border); color:var(--cyan);
+  box-shadow:var(--cyan-glow);
+}
+.msg.user .avatar {
+  background:linear-gradient(135deg,#050e20,#0a1a40);
+  border:1px solid rgba(0,85,255,0.35); color:#5588ff;
+}
+
+.msg-body { flex:1; min-width:0; }
+.msg-time {
+  font-family:var(--mono); font-size:0.55rem;
+  color:var(--text-3); letter-spacing:0.1em; margin-bottom:4px;
+}
+.msg.user .msg-time { text-align:right; }
+
+.bubble {
+  padding:11px 15px; border-radius:4px;
+  font-size:0.88rem; line-height:1.7; font-weight:300;
+  word-break:break-word;
+}
+.msg.ai .bubble {
+  background:var(--card); border:1px solid var(--cyan-border);
+  border-left:2px solid var(--cyan); color:var(--text);
+}
+.msg.user .bubble {
+  background:linear-gradient(135deg,#040f25,#060d1e);
+  border:1px solid rgba(0,85,255,0.2);
+  border-right:2px solid var(--blue); color:var(--text);
+}
+.bubble.error {
+  background:rgba(255,51,85,0.07);
+  border:1px solid rgba(255,51,85,0.25);
+  border-left:2px solid var(--danger);
+  color:#ff8899; font-family:var(--mono); font-size:0.78rem;
+}
+
+/* Bubble markdown */
+.bubble p { margin-bottom:7px; }
+.bubble p:last-child { margin-bottom:0; }
+.bubble code {
+  font-family:var(--mono); font-size:0.8rem;
+  background:rgba(0,212,255,0.08); border:1px solid rgba(0,212,255,0.15);
+  padding:1px 5px; border-radius:2px; color:var(--cyan);
+}
+.bubble pre {
+  background:rgba(0,0,0,0.45); border:1px solid var(--cyan-border);
+  border-left:2px solid var(--blue); border-radius:3px;
+  padding:10px 12px; overflow-x:auto; margin:8px 0;
+}
+.bubble pre code { background:transparent; border:none; padding:0; color:#80c4ff; font-size:0.78rem; }
+.bubble strong { color:var(--cyan); font-weight:500; }
+.bubble em { color:var(--text-2); }
+.bubble ul, .bubble ol { padding-left:18px; margin:6px 0; }
+.bubble li { margin-bottom:3px; }
+.bubble h1,.bubble h2,.bubble h3 {
+  font-family:var(--display); font-weight:600; color:var(--text);
+  margin:10px 0 6px; letter-spacing:0.06em;
+}
+.bubble h1 { font-size:1rem; } .bubble h2 { font-size:0.9rem; } .bubble h3 { font-size:0.82rem; }
+
+/* Typing */
+.typing-dots {
+  display:flex; gap:5px; align-items:center;
+  padding:12px 15px;
+  background:var(--card); border:1px solid var(--cyan-border);
+  border-left:2px solid var(--cyan); border-radius:4px;
+  width:fit-content;
+}
+.dot {
+  width:5px; height:5px; border-radius:50%;
+  background:var(--cyan);
+  animation:bounce 1.1s ease-in-out infinite;
+}
+.dot:nth-child(2){animation-delay:0.18s}
+.dot:nth-child(3){animation-delay:0.36s}
+@keyframes bounce { 0%,80%,100%{transform:translateY(0);opacity:0.4} 40%{transform:translateY(-6px);opacity:1} }
+
+/* Image in message */
+.msg-img {
+  max-width:220px; max-height:180px;
+  border-radius:4px; border:1px solid var(--cyan-border);
+  display:block; margin-bottom:8px; object-fit:cover;
+}
+
+/* ── FILE PREVIEW ── */
+#file-strip {
+  flex-shrink:0; padding:0 20px;
+  display:flex; gap:8px; flex-wrap:wrap;
+}
+.fpreview {
+  position:relative; background:var(--card);
+  border:1px solid var(--cyan-border); border-radius:4px; overflow:hidden;
+}
+.fpreview img { width:52px; height:52px; object-fit:cover; display:block; }
+.fname {
+  font-family:var(--mono); font-size:0.56rem; color:var(--text-2);
+  padding:3px 6px; max-width:110px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.fremove {
+  position:absolute; top:2px; right:2px;
+  width:15px; height:15px; border-radius:50%;
+  background:rgba(255,51,85,0.8); border:none;
+  color:#fff; font-size:0.6rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  line-height:1;
+}
+
+/* ── INPUT ── */
+.input-zone {
+  flex-shrink:0;
+  padding:10px 20px 16px;
+  background:linear-gradient(0deg, rgba(2,9,16,0.97) 60%, transparent);
+}
+.input-row {
+  display:flex; align-items:flex-end; gap:8px;
+  background:var(--card); border:1px solid var(--cyan-border);
+  border-radius:6px; padding:9px 12px;
+  transition:border-color 0.2s, box-shadow 0.2s;
+}
+.input-row:focus-within {
+  border-color:rgba(0,212,255,0.5);
+  box-shadow: 0 0 18px rgba(0,212,255,0.12), inset 0 0 24px rgba(0,212,255,0.02);
+}
+.input-caret {
+  font-family:var(--mono); font-size:0.75rem; color:var(--cyan);
+  opacity:0.6; align-self:flex-end; padding-bottom:3px; flex-shrink:0;
+}
+#inp {
+  flex:1; background:transparent; border:none; outline:none;
+  color:var(--text); font-family:var(--body); font-size:0.9rem; font-weight:300;
+  resize:none; max-height:110px; line-height:1.5; scrollbar-width:none;
+}
+#inp::-webkit-scrollbar { display:none; }
+#inp::placeholder { font-family:var(--mono); font-size:0.72rem; color:var(--text-3); letter-spacing:0.05em; }
+
+.btn-attach {
+  width:30px; height:30px; flex-shrink:0;
+  background:transparent; border:1px solid var(--cyan-border);
+  border-radius:4px; cursor:pointer; color:var(--text-3);
+  display:flex; align-items:center; justify-content:center;
+  transition:all 0.2s;
+}
+.btn-attach:hover { color:var(--cyan); border-color:rgba(0,212,255,0.45); background:var(--cyan-soft); }
+.btn-attach svg { width:14px; height:14px; }
+
+.btn-send {
+  width:34px; height:34px; flex-shrink:0;
+  background:linear-gradient(135deg,#003399,#005588);
+  border:1px solid rgba(0,212,255,0.4); border-radius:4px;
+  cursor:pointer; color:var(--cyan);
+  display:flex; align-items:center; justify-content:center;
+  transition:all 0.2s; box-shadow:0 0 10px rgba(0,85,255,0.3);
+}
+.btn-send:hover { background:linear-gradient(135deg,#0044bb,#0077aa); box-shadow:0 0 18px rgba(0,212,255,0.35); }
+.btn-send:active { transform:scale(0.93); }
+.btn-send:disabled { opacity:0.35; cursor:not-allowed; }
+.btn-send svg { width:15px; height:15px; }
+
+.hint {
+  font-family:var(--mono); font-size:0.56rem; color:var(--text-3);
+  text-align:right; margin-top:6px; letter-spacing:0.08em;
+}
+
+/* Scanlines */
+.scanline {
+  position:fixed; inset:0; z-index:999; pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px);
+}
+
+/* Install banner */
+#install-banner {
+  position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
+  background:var(--card); border:1px solid var(--cyan); border-radius:6px;
+  padding:12px 18px; display:flex; align-items:center; gap:12px;
+  font-family:var(--mono); font-size:0.7rem; color:var(--text-2);
+  box-shadow:var(--cyan-glow); z-index:100; white-space:nowrap;
+  animation:rise 0.4s ease;
+}
+#install-banner button {
+  background:var(--cyan); color:var(--void);
+  border:none; border-radius:3px; padding:5px 12px;
+  font-family:var(--mono); font-size:0.68rem; font-weight:700;
+  cursor:pointer; letter-spacing:0.08em;
+}
+#install-banner .dismiss {
+  background:transparent; color:var(--text-3); padding:0;
+  font-size:0.9rem; line-height:1;
+}
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+
+<div id="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="18" cy="18" r="17" stroke="#00d4ff" stroke-width="0.7" opacity="0.3"/>
+          <circle cx="18" cy="18" r="11" stroke="#00d4ff" stroke-width="0.7" opacity="0.5"/>
+          <line x1="18" y1="1" x2="18" y2="6" stroke="#00d4ff" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="18" y1="30" x2="18" y2="35" stroke="#00d4ff" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="1" y1="18" x2="6" y2="18" stroke="#00d4ff" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="30" y1="18" x2="35" y2="18" stroke="#00d4ff" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="5.5" y1="5.5" x2="8.9" y2="8.9" stroke="#00d4ff" stroke-width="1.1" stroke-linecap="round" opacity="0.6"/>
+          <line x1="27.1" y1="27.1" x2="30.5" y2="30.5" stroke="#00d4ff" stroke-width="1.1" stroke-linecap="round" opacity="0.6"/>
+          <line x1="30.5" y1="5.5" x2="27.1" y2="8.9" stroke="#00d4ff" stroke-width="1.1" stroke-linecap="round" opacity="0.6"/>
+          <line x1="5.5" y1="30.5" x2="8.9" y2="27.1" stroke="#00d4ff" stroke-width="1.1" stroke-linecap="round" opacity="0.6"/>
+          <circle cx="18" cy="18" r="4.5" fill="rgba(0,212,255,0.1)" stroke="#00d4ff" stroke-width="0.8"/>
+          <circle cx="18" cy="18" r="2" fill="#00d4ff"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <div class="logo-name">SURYA<em>.AI</em></div>
+        <div class="logo-tag">NEURAL INTERFACE v2.0</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="status">
+        <div class="status-dot"></div>
+        <span id="status-txt">ONLINE</span>
+      </div>
+      <button class="clear-btn" onclick="clearChat()">CLR</button>
+    </div>
+  </header>
+
+  <!-- MODEL BAR -->
+  <div class="model-bar">
+    <span class="model-label">MODEL //</span>
+    <button class="chip on" data-m="llama-3.3-70b-versatile">LLAMA 3.3 70B</button>
+    <button class="chip" data-m="llama-3.1-8b-instant">LLAMA 3.1 8B</button>
+    <button class="chip" data-m="gemma2-9b-it">GEMMA 2 9B</button>
+    <button class="chip" data-m="mixtral-8x7b-32768">MIXTRAL 8x7B</button>
+  </div>
+
+  <!-- MESSAGES -->
+  <div id="messages">
+    <div class="welcome" id="welcome">
+      <svg class="w-orb" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="40" r="39" stroke="#00d4ff" stroke-width="0.5" opacity="0.15"/>
+        <circle cx="40" cy="40" r="30" stroke="#00d4ff" stroke-width="0.5" opacity="0.25"/>
+        <circle cx="40" cy="40" r="20" stroke="#00d4ff" stroke-width="0.8" opacity="0.4"/>
+        <circle cx="40" cy="40" r="10" fill="rgba(0,212,255,0.08)" stroke="#00d4ff" stroke-width="1" opacity="0.7"/>
+        <circle cx="40" cy="40" r="4" fill="#00d4ff" opacity="0.5"/>
+        <circle cx="40" cy="40" r="2" fill="#00d4ff"/>
+        <circle cx="40" cy="10" r="2.5" fill="#0055ff" opacity="0.9">
+          <animateTransform attributeName="transform" type="rotate" from="0 40 40" to="360 40 40" dur="5s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="70" cy="40" r="1.8" fill="#00d4ff" opacity="0.7">
+          <animateTransform attributeName="transform" type="rotate" from="0 40 40" to="-360 40 40" dur="8s" repeatCount="indefinite"/>
+        </circle>
+      </svg>
+      <div class="w-title">SURYA<em>.AI</em></div>
+      <div class="w-sub">// NEURAL INTERFACE ONLINE //</div>
+      <div class="w-chips">
+        <span class="w-chip" onclick="suggest(this)">Explain quantum computing</span>
+        <span class="w-chip" onclick="suggest(this)">Write a Python script</span>
+        <span class="w-chip" onclick="suggest(this)">Summarize this topic</span>
+        <span class="w-chip" onclick="suggest(this)">Help me debug code</span>
+        <span class="w-chip" onclick="suggest(this)">Give me a study plan</span>
+        <span class="w-chip" onclick="suggest(this)">Translate to Hindi</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILE STRIP -->
+  <div id="file-strip"></div>
+
+  <!-- INPUT -->
+  <div class="input-zone">
+    <div class="input-row">
+      <span class="input-caret">&gt;</span>
+      <textarea id="inp" rows="1" placeholder="// input query..." maxlength="8000"></textarea>
+      <button class="btn-attach" id="attach-btn" title="Attach image">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+        </svg>
+      </button>
+      <button class="btn-send" id="send-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </div>
+    <div class="hint">ENTER to send &nbsp;·&nbsp; SHIFT+ENTER newline &nbsp;·&nbsp; Powered by Groq</div>
+  </div>
+
+</div>
+
+<!-- Install banner (shown when PWA installable) -->
+<div id="install-banner" style="display:none">
+  📲 Add Surya.ai to home screen
+  <button onclick="installPWA()">INSTALL</button>
+  <button class="dismiss" onclick="document.getElementById('install-banner').style.display='none'">✕</button>
+</div>
+
+<input type="file" id="file-input" accept="image/*" multiple style="display:none">
+
+<script>
+// ── STATE ──
+let model = 'llama-3.3-70b-versatile';
+let history = [];
+let attached = []; // { name, dataUrl, isImage }
+let busy = false;
+let deferredInstall = null;
+
+const msgsEl = document.getElementById('messages');
+const inpEl  = document.getElementById('inp');
+const sendBtn = document.getElementById('send-btn');
+
+// ── MODEL CHIPS ──
+document.querySelectorAll('.chip').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+    c.classList.add('on');
+    model = c.dataset.m;
+  });
+});
+
+// ── TEXTAREA AUTO-RESIZE ──
+inpEl.addEventListener('input', () => {
+  inpEl.style.height = 'auto';
+  inpEl.style.height = Math.min(inpEl.scrollHeight, 110) + 'px';
+});
+
+// ── SEND ON ENTER ──
+inpEl.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+});
+sendBtn.addEventListener('click', send);
+
+// ── FILE ATTACH ──
+document.getElementById('attach-btn').addEventListener('click', () =>
+  document.getElementById('file-input').click()
+);
+document.getElementById('file-input').addEventListener('change', async e => {
+  for (const f of e.target.files) {
+    const dataUrl = await readFile(f);
+    attached.push({ name: f.name, dataUrl, isImage: f.type.startsWith('image/') });
+  }
+  e.target.value = '';
+  renderStrip();
+});
+
+function readFile(f) {
+  return new Promise(res => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.readAsDataURL(f);
+  });
+}
+
+function renderStrip() {
+  const el = document.getElementById('file-strip');
+  el.innerHTML = '';
+  attached.forEach((f, i) => {
+    const d = document.createElement('div');
+    d.className = 'fpreview';
+    d.innerHTML = f.isImage
+      ? `<img src="${f.dataUrl}" alt="">`
+      : `<div class="fname">${f.name}</div>`;
+    const rm = document.createElement('button');
+    rm.className = 'fremove'; rm.textContent = '×';
+    rm.onclick = () => { attached.splice(i, 1); renderStrip(); };
+    d.appendChild(rm);
+    el.appendChild(d);
+  });
+}
+
+// ── SUGGESTIONS ──
+function suggest(el) {
+  inpEl.value = el.textContent;
+  inpEl.focus();
+  inpEl.dispatchEvent(new Event('input'));
+}
+
+// ── CLEAR ──
+function clearChat() {
+  history = [];
+  msgsEl.innerHTML = '';
+  msgsEl.innerHTML = `
+    <div class="welcome" id="welcome">
+      <svg class="w-orb" viewBox="0 0 80 80" fill="none">
+        <circle cx="40" cy="40" r="39" stroke="#00d4ff" stroke-width="0.5" opacity="0.15"/>
+        <circle cx="40" cy="40" r="30" stroke="#00d4ff" stroke-width="0.5" opacity="0.25"/>
+        <circle cx="40" cy="40" r="20" stroke="#00d4ff" stroke-width="0.8" opacity="0.4"/>
+        <circle cx="40" cy="40" r="10" fill="rgba(0,212,255,0.08)" stroke="#00d4ff" stroke-width="1" opacity="0.7"/>
+        <circle cx="40" cy="40" r="2" fill="#00d4ff"/>
+      </svg>
+      <div class="w-title">SURYA<em style="color:#00d4ff;font-style:normal;text-shadow:0 0 20px #00d4ff">.AI</em></div>
+      <div class="w-sub">// CHAT CLEARED — READY //</div>
+    </div>`;
+}
+
+// ── SEND ──
+async function send() {
+  const text = inpEl.value.trim();
+  if ((!text && !attached.length) || busy) return;
+
+  // Remove welcome
+  document.getElementById('welcome')?.remove();
+
+  // Build content
+  let content;
+  if (attached.length) {
+    content = [];
+    attached.filter(f => f.isImage).forEach(f => {
+      content.push({ type: 'image_url', image_url: { url: f.dataUrl } });
+    });
+    content.push({ type: 'text', text: text || 'Analyze the above.' });
+  } else {
+    content = text;
+  }
+
+  const imgPreviews = attached.filter(f => f.isImage).map(f => f.dataUrl);
+  addMsg('user', text || `[${attached.length} file(s)]`, imgPreviews);
+  history.push({ role: 'user', content });
+
+  inpEl.value = ''; inpEl.style.height = 'auto';
+  attached = []; renderStrip();
+
+  const typing = addTyping();
+  busy = true; sendBtn.disabled = true;
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: history, model })
+    });
+
+    if (!res.ok) {
+      const e = await res.json();
+      throw new Error(e.error || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content || 'No response.';
+    history.push({ role: 'assistant', content: reply });
+    typing.remove();
+    addMsg('ai', reply);
+
+  } catch (err) {
+    typing.remove();
+    addError(err.message);
+  } finally {
+    busy = false; sendBtn.disabled = false;
+    inpEl.focus();
+  }
+}
+
+// ── RENDER HELPERS ──
+function addMsg(role, text, imgs = []) {
+  const t = new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:false });
+  const label = role === 'user' ? 'YOU' : 'SU';
+  const name  = role === 'user' ? 'YOU' : 'SURYA';
+
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+
+  const imgsHtml = imgs.map(u => `<img class="msg-img" src="${u}" alt="">`).join('');
+  const bodyHtml = role === 'ai' ? fmt(text) : esc(text).replace(/\n/g,'<br>');
+
+  div.innerHTML = `
+    <div class="avatar">${label}</div>
+    <div class="msg-body">
+      <div class="msg-time">${name} · ${t}</div>
+      <div class="bubble">${imgsHtml}${bodyHtml}</div>
+    </div>`;
+
+  msgsEl.appendChild(div);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+  return div;
+}
+
+function addTyping() {
+  const div = document.createElement('div');
+  div.className = 'msg ai';
+  div.innerHTML = `
+    <div class="avatar">SU</div>
+    <div class="msg-body">
+      <div class="msg-time">SURYA · processing...</div>
+      <div class="typing-dots">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+    </div>`;
+  msgsEl.appendChild(div);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+  return div;
+}
+
+function addError(msg) {
+  const div = document.createElement('div');
+  div.className = 'msg ai';
+  div.innerHTML = `
+    <div class="avatar">SU</div>
+    <div class="msg-body">
+      <div class="msg-time">SURYA · error</div>
+      <div class="bubble error">⚠ ${esc(msg)}</div>
+    </div>`;
+  msgsEl.appendChild(div);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+
+function fmt(text) {
+  let t = esc(text);
+  t = t.replace(/```(\w*)\n?([\s\S]*?)```/g, (_,l,c) => `<pre><code>${c.trim()}</code></pre>`);
+  t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
+  t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  t = t.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  t = t.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  t = t.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  t = t.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+  t = t.replace(/\n/g, '<br>');
+  return t;
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── PWA ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () =>
+    navigator.serviceWorker.register('/sw.js').catch(console.error)
+  );
+}
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstall = e;
+  document.getElementById('install-banner').style.display = 'flex';
+});
+
+function installPWA() {
+  if (!deferredInstall) return;
+  deferredInstall.prompt();
+  deferredInstall.userChoice.then(() => {
+    deferredInstall = null;
+    document.getElementById('install-banner').style.display = 'none';
+  });
+}
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-banner').style.display = 'none';
+});
+
+inpEl.focus();
+</script>
+</body>
+</html>
